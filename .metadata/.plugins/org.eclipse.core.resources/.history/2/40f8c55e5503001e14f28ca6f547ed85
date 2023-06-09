@@ -1,0 +1,60 @@
+package com.example.demo.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.Entity.User;
+import com.example.demo.Repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+
+@Service
+public class UserService {
+
+	@Autowired
+	UserRepository repository;
+
+	@Transactional
+	public User saveDataToDB(User user) {
+//		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//		String encryptedPasswoed =passwordEncoder.encode(user.getPassword());
+//		user.setPassword(encryptedPasswoed);
+		User save = repository.save(user);
+
+		return save;
+	}
+
+	public List<User> getAllDescriptionNames() {
+
+		return (List<User>) repository.findAll();
+
+	}
+
+	@Transactional
+	public List<User> getAllUsers() {
+
+		return (List<User>) repository.findAll();
+
+	}
+
+	public User getUserDataFromDB(int userId) {
+		Optional<User> optionalUser = repository.findById(userId);
+		User user = optionalUser.orElseThrow();
+		return user;
+	}
+
+	@Transactional
+	public User updateUserData(int userId, User user) {
+
+		User existingUser = repository.findById(userId).orElseThrow();
+
+		existingUser.setTask(user.getTask());
+		existingUser.setEmail(user.getEmail());
+		existingUser.setUsername(user.getUsername());
+		return repository.save(existingUser);
+	}
+
+}

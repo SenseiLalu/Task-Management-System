@@ -1,0 +1,5 @@
+package com.example.demo.DTOClasses;
+
+public class TaskDetailsResponse {
+
+}

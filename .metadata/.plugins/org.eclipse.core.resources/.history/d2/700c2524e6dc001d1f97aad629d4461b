@@ -1,0 +1,175 @@
+package com.example.demo.Service;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Optional;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.support.Repositories;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.CustomExceptionHandler;
+import com.example.demo.DTOClasses.TaskDetailsDTO;
+import com.example.demo.DTOClasses.TaskDetailsResponse;
+import com.example.demo.Entity.Project;
+import com.example.demo.Entity.Status;
+import com.example.demo.Entity.Task;
+import com.example.demo.Entity.TaskCategory;
+import com.example.demo.Entity.User;
+import com.example.demo.Repository.StatusRepository;
+import com.example.demo.Repository.TaskCategoryRepository;
+import com.example.demo.Repository.TaskCommentsRepository;
+import com.example.demo.Repository.TaskRepository;
+import com.example.demo.Repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+
+@Service
+public class TaskService {
+	
+	@Autowired
+	ModelMapper modelMapper;
+	
+	@Autowired
+	TaskRepository taskRepository;
+
+	@Autowired
+	UserRepository  userRepository;
+	
+	@Autowired
+	StatusRepository statusRepository;
+	
+	
+	@Autowired
+	TaskCommentsRepository commentsRepository;
+	
+	@Autowired
+	TaskCategoryRepository categoryRepository;
+	
+//	public TaskDetailsDTO addTaskDataToDB(TaskDetailsDTO taskdto) {
+//		
+//		Task task =this.modelMapper.map(taskdto, Task.class);
+//		task.setStatus(modelMapper.map(task.getStatus(),Status.class));
+//		task.setUser(modelMapper.map(task.getUser(), User.class));
+//		task.setUsers(modelMapper.map(task.getUsers(),User.class));
+//		task.setTaskCategory(modelMapper.map(task.getTaskCategory(), TaskCategory.class));
+//		task=taskRepository.save(task);
+//		return modelMapper.map(task, TaskDetailsDTO.class);
+//	}
+	
+	
+	public Task addTaskDataToDB(TaskDetailsDTO detailsDTO) {
+		Optional<Task> findById = Optional.ofNullable(taskRepository.findBytaskName(detailsDTO.getTaskName()));
+		if(findById.isPresent()) {
+			throw new CustomExceptionHandler("This Title belongs to another task !!");
+		}
+		Task details = new Task();
+		Optional<TaskCategory> category = categoryRepository.findById(detailsDTO.getTaskCategoryId());
+		Optional<User> createdby = userRepository.findById(detailsDTO.getCreatedBy());
+		Optional<User> assignedto = userRepository.findById(detailsDTO.getAssignedDto());
+		Optional<Status> status = statusRepository.findById(detailsDTO.getStatusId());
+		//Optional<Project> project = projectRepository.findById(detailsDTO.getProject_id());
+
+		details.setTaskCategory(category.get());
+		details.setTaskName(detailsDTO.getTaskName());
+		details.setAssigenedDate(detailsDTO.getAssigenedDate());
+		details.setUsers(createdby.get());
+		details.setUser(assignedto.get());
+		
+		//logic for auto generated date
+		Calendar calendar = Calendar.getInstance();
+		details.setCreatedOn(calendar);
+		
+		details.setLongDescription(detailsDTO.getLongDescription());
+		details.setDeuDate(detailsDTO.getDeuDate());
+		details.setStatus(status.get());
+		//details.setProject(project.get());
+		
+		taskRepository.save(details);
+		return details;
+		
+	}
+
+	public Task getNameById(int taskId) {
+
+		Optional<Task> byId = taskRepository.findById(taskId);
+		Task task = byId.get();
+		
+		return task;
+	}
+
+	public Status getStatusById(int statusId) {
+
+		Optional<Status> findById = statusRepository.findById(statusId);
+		Status status = findById.get();
+		return status;
+	}
+
+	public List<TaskDetailsDTO> getAllTaskDetails() {
+
+	 List<Task> findAll = (List<Task>) taskRepository.findAll();
+	 List<TaskDetailsDTO> dtos = new ArrayList<>();
+     for (Task task : findAll) {
+         TaskDetailsDTO dto = new TaskDetailsDTO();
+         dto.setTaskId(task.getTaskId());
+         dto.setTaskName(task.getTaskName());
+         dto.setLongDescription(task.getLongDescription());
+         dto.setAssigenedDate(task.getAssigenedDate());
+         dto.setDeuDate(task.getDeuDate());
+         dto.setStatusId(task.getStatus().getStatusId());
+         dto.setAssignedDto(task.getUser().getUserId());
+         dto.setCreatedBy(task.getUsers().getUserId());
+         dto.setCreatedOn(task.getCreatedOn());
+         dto.setTaskCategoryId(task.getTaskCategory().getTaskCategoryId());
+         dtos.add(dto);
+     }
+	 
+	 return dtos;
+	
+		
+	}
+@Transactional
+	public Task updateTask(TaskDetailsDTO taskDto ,int taskId) {
+
+		Optional<Task> task =(taskRepository.findById(taskId));
+		if(task.isPresent()) {
+			Task task2 = task.get();
+		task2.setTaskName(taskDto.getTaskName());
+		task2.setDeuDate(taskDto.getDeuDate());
+		task2.setAssigenedDate(taskDto.getAssigenedDate());
+		Task save = taskRepository.save(task2);
+		return save;
+		}
+
+//	public List<TaskDetailsResponse>  getAllTaskDetailsData() {
+//
+//		Iterable<Task> findAll = taskRepository.findAll();
+//		List<TaskDetailsResponse> detailsResponses =new ArrayList<>();
+//		for(Task task : findAll) {
+//			TaskDetailsResponse detailsResponse =new TaskDetailsResponse();
+//			detailsResponse.setDescription(task.get;
+//			detailsResponses.add(detailsResponse);
+//		}
+//		return detailsResponses;
+//		
+//	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

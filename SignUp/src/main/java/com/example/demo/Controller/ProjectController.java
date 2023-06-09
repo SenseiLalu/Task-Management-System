@@ -1,0 +1,77 @@
+package com.example.demo.Controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.DTOClasses.ProjectDTO;
+import com.example.demo.DTOClasses.UserProjectDTO;
+import com.example.demo.Entity.Project;
+import com.example.demo.Service.ProjectService;
+@CrossOrigin
+@RestController
+public class ProjectController {
+
+	@Autowired
+	ProjectService projectService;
+	
+	@PostMapping("/addProject")
+	public Project addProject(@RequestBody Project project) {
+		
+		Project projectToDB = projectService.addProjectToDB(project);
+		
+		return projectToDB;
+	}
+	
+//	@PostMapping("/addProjectAndUser")
+//	public Project addProjectAndUser(@RequestBody UserProjectDTO projectDto) {
+//		
+//		Project projectToDB = projectService.addProjectAndUserDataToDB(projectDto);
+//		
+//		return projectToDB;
+//	}
+	
+	@GetMapping("/getProjectNames")
+	public List<String> getAllData() {
+		
+		return  projectService.getAllProjectNames();
+		
+	}
+	
+	@GetMapping("/getProjectNameByID/{projectId}")
+	public String getName(@PathVariable int projectId) {
+		
+		return  projectService.getNameById(projectId);
+		
+	}
+	
+	@GetMapping("/getAllProject")
+	public List<Project> getAllProjectData() {
+		
+		return  projectService.getAllProjectData();
+		
+	}
+	
+	@DeleteMapping("/deleteAll")
+	public Project deleteProject(@RequestBody Project project) {
+		return projectService.deleteDataFromTable(project);
+		
+	}
+	
+    @PutMapping("/projects/{projectId}/users/{userId}")
+    public ResponseEntity<String> assignProjectToUser(@PathVariable int projectId, @PathVariable int userId) {
+        projectService.assignProjectToUser(projectId, userId);
+        return ResponseEntity.noContent().build();
+    }
+	
+}
